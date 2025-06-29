@@ -84,5 +84,4 @@ const BlockchainLoggerProvider: React.FC<Props> = ({ children }) => {
     </BlockchainLoggerContext.Provider>
   );
 };
-
 export default BlockchainLoggerProvider;
