@@ -1,7 +1,7 @@
 import React from 'react';
 import { WalletProvider } from '@txnlab/use-wallet';
 import { PeraWalletConnect } from '@perawallet/connect';
-mport { BlockchainLoggerProvider } from '../components/BlockchainLoggerProvider';
+import { BlockchainLoggerProvider } from '../components/BlockchainLoggerProvider';
 import StripeProvider from '../components/StripeProvider';
 import { TranslationProvider } from '../components/TranslationProvider';
 import { LingoProviderWrapper, loadDictionary } from 'lingo.dev/react/client';
