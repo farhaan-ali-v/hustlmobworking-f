@@ -1,4 +1,4 @@
-import { StrictMode, lazy, Suspense } from 'react';
+import { StrictMode, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
@@ -8,8 +8,7 @@ import { LingoProviderWrapper, loadDictionary } from 'lingo.dev/react/client';
 import * as Sentry from '@sentry/react';
 import { WalletProvider } from '@txnlab/use-wallet';
 import { PeraWalletConnect } from '@perawallet/connect';
-
-const BlockchainLoggerProvider = lazy(() => import('./components/BlockchainLoggerProvider.tsx'));
+import BlockchainLoggerProvider from './components/BlockchainLoggerProvider.tsx'; // ✅ No lazy loading
 
 // Initialize Sentry
 Sentry.init({
@@ -50,17 +49,15 @@ if (!rootElement) {
             nodeToken: 'BOLTqzcvtetizg512',
           }}
         >
-          <Suspense fallback={<p>Loading...</p>}>
-            <BlockchainLoggerProvider>
-              <LingoProviderWrapper loadDictionary={(locale) => loadDictionary(locale)}>
-                <TranslationProvider>
-                  <StripeProvider>
-                    <App />
-                  </StripeProvider>
-                </TranslationProvider>
-              </LingoProviderWrapper>
-            </BlockchainLoggerProvider>
-          </Suspense>
+          <BlockchainLoggerProvider>
+            <LingoProviderWrapper loadDictionary={(locale) => loadDictionary(locale)}>
+              <TranslationProvider>
+                <StripeProvider>
+                  <App />
+                </StripeProvider>
+              </TranslationProvider>
+            </LingoProviderWrapper>
+          </BlockchainLoggerProvider>
         </WalletProvider>
       </Sentry.ErrorBoundary>
     </StrictMode>
