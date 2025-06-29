@@ -23,7 +23,7 @@ interface Props {
   children: React.ReactNode;
 }
 
-export const BlockchainLoggerProvider: React.FC<Props> = ({ children }) => {
+const BlockchainLoggerProvider: React.FC<Props> = ({ children }) => {
   const { activeAddress, signer, providers, connect } = useWallet();
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -84,3 +84,5 @@ export const BlockchainLoggerProvider: React.FC<Props> = ({ children }) => {
     </BlockchainLoggerContext.Provider>
   );
 };
+
+export default BlockchainLoggerProvider;
