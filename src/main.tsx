@@ -6,7 +6,7 @@ import StripeProvider from './components/StripeProvider.tsx';
 import { TranslationProvider } from './components/TranslationProvider.tsx';
 import { LingoProviderWrapper, loadDictionary } from "lingo.dev/react/client";
 import * as Sentry from "@sentry/react";
-import { WalletConnectProvider } from './components/BlockchainLoggerProvider.tsx';
+import { BlockchainLoggerProvider } from './components/BlockchainLoggerProvider.tsx';
 import { WalletProvider } from '@txnlab/use-wallet';
 import { PeraWalletConnect } from '@perawallet/connect';
 
