@@ -6,14 +6,14 @@ import toast from 'react-hot-toast';
 interface BlockchainLoggerContextType {
   logPaymentMethod: (userId: string, paymentType: string) => Promise<string | null>;
   isWalletConnected: boolean;
-  connectWallet: () => void;
+  connectWallet: () => Promise<void>;
   activeAddress: string | null;
 }
 
 const BlockchainLoggerContext = createContext<BlockchainLoggerContextType>({
   logPaymentMethod: async () => null,
   isWalletConnected: false,
-  connectWallet: () => {},
+  connectWallet: async () => {},
   activeAddress: null
 });
 
@@ -24,7 +24,7 @@ interface WalletConnectProviderProps {
 }
 
 export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({ children }) => {
-  const { activeAccount, signTransactions, connect, providers } = useWallet();
+  const { activeAddress, signer, providers, connect } = useWallet();
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
@@ -32,9 +32,9 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({ ch
     const initWallet = async () => {
       try {
         // Try to reconnect to previously connected wallet
-        if (providers && providers.length > 0 && !activeAccount) {
+        if (providers && providers.length > 0 && !activeAddress) {
           // Find Pera wallet provider
-          const peraProvider = providers.find(p => p.metadata.id === 'pera-wallet');
+          const peraProvider = providers.find(p => p.id === 'pera-wallet');
           if (peraProvider) {
             await connect(peraProvider.id);
           }
@@ -47,24 +47,25 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({ ch
     };
 
     initWallet();
-  }, [providers, activeAccount, connect]);
+  }, [providers, activeAddress, connect]);
 
   const connectWallet = async () => {
     try {
       if (providers && providers.length > 0) {
         // Find Pera wallet provider
-        const peraProvider = providers.find(p => p.metadata.id === 'pera-wallet');
+        const peraProvider = providers.find(p => p.id === 'pera-wallet');
         if (peraProvider) {
           await connect(peraProvider.id);
           toast.success('Wallet connected successfully');
+          return;
         } else {
           // Use the first available provider if Pera is not available
           await connect(providers[0].id);
           toast.success('Wallet connected successfully');
+          return;
         }
-      } else {
-        toast.error('No wallet providers available');
       }
+      toast.error('No wallet providers available');
     } catch (error) {
       console.error('Error connecting wallet:', error);
       toast.error('Failed to connect wallet');
@@ -72,7 +73,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({ ch
   };
 
   const logPaymentMethod = async (userId: string, paymentType: string): Promise<string | null> => {
-    if (!activeAccount || !signTransactions) {
+    if (!activeAddress || !signer) {
       console.warn('Wallet not connected, cannot log to blockchain');
       return null;
     }
@@ -81,17 +82,19 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({ ch
       const txId = await logPaymentMethodToBlockchain(
         userId,
         paymentType,
-        activeAccount.address,
-        signTransactions
+        activeAddress,
+        signer
       );
       
       if (txId) {
         console.log(`Payment method logged to blockchain with txID: ${txId}`);
+        toast.success('Payment method logged to blockchain');
         return txId;
       }
       return null;
     } catch (error) {
       console.error('Error logging payment method to blockchain:', error);
+      toast.error('Failed to log to blockchain');
       return null;
     }
   };
@@ -100,9 +103,9 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({ ch
     <BlockchainLoggerContext.Provider 
       value={{ 
         logPaymentMethod,
-        isWalletConnected: !!activeAccount,
+        isWalletConnected: !!activeAddress,
         connectWallet,
-        activeAddress: activeAccount?.address || null
+        activeAddress
       }}
     >
       {children}

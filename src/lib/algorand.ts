@@ -1,5 +1,4 @@
 import algosdk from 'algosdk';
-import * as algokit from '@algorandfoundation/algokit-utils';
 
 // Algorand TestNet configuration
 const ALGORAND_NETWORK = 'testnet';
@@ -12,25 +11,14 @@ const INDEXER_PORT = '';
 const INDEXER_TOKEN = API_KEY;
 
 /**
- * Initialize Algorand clients using AlgoKit
+ * Initialize Algorand clients
  */
 export const initAlgorandClients = async () => {
   try {
-    const { algod, indexer } = algokit.getAlgorandClients({
-      network: ALGORAND_NETWORK,
-      algod: {
-        server: NODE_SERVER,
-        port: NODE_PORT,
-        token: NODE_TOKEN
-      },
-      indexer: {
-        server: INDEXER_SERVER,
-        port: INDEXER_PORT,
-        token: INDEXER_TOKEN
-      }
-    });
+    const algodClient = new algosdk.Algodv2(NODE_TOKEN, NODE_SERVER, NODE_PORT);
+    const indexerClient = new algosdk.Indexer(INDEXER_TOKEN, INDEXER_SERVER, INDEXER_PORT);
     
-    return { algod, indexer };
+    return { algod: algodClient, indexer: indexerClient };
   } catch (error) {
     console.error('Error initializing Algorand clients:', error);
     throw error;
@@ -46,7 +34,7 @@ export const initAlgorandClients = async () => {
 export const sendNoteTransaction = async (
   senderAddress: string,
   note: string,
-  signCallback: (txnToSign: Uint8Array) => Promise<Uint8Array>
+  signCallback: (txnToSign: Uint8Array[]) => Promise<Uint8Array[]>
 ): Promise<string> => {
   try {
     const { algod } = await initAlgorandClients();
@@ -64,10 +52,11 @@ export const sendNoteTransaction = async (
     });
     
     // Sign the transaction
-    const signedTxn = await signCallback(txn.toByte());
+    const txnsToSign = [{ txn, signers: [senderAddress] }];
+    const signedTxns = await signCallback(txnsToSign.map(t => algosdk.encodeUnsignedTransaction(t.txn)));
     
     // Submit the transaction
-    const { txId } = await algod.sendRawTransaction(signedTxn).do();
+    const { txId } = await algod.sendRawTransaction(signedTxns).do();
     
     // Wait for confirmation
     await algosdk.waitForConfirmation(algod, txId, 4);
@@ -84,13 +73,14 @@ export const sendNoteTransaction = async (
  * Log payment method addition to Algorand blockchain
  * @param userId User ID
  * @param paymentType Payment method type
+ * @param senderAddress Sender's Algorand address
  * @param signCallback Function to sign the transaction
  */
 export const logPaymentMethodToBlockchain = async (
   userId: string,
   paymentType: string,
   senderAddress: string,
-  signCallback: (txnToSign: Uint8Array) => Promise<Uint8Array>
+  signCallback: (txnToSign: Uint8Array[]) => Promise<Uint8Array[]>
 ): Promise<string | null> => {
   try {
     // Create the note as a JSON string

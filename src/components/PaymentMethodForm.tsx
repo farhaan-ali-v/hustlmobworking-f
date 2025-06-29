@@ -11,6 +11,7 @@ import {
   CashAppIcon, 
   ApplePayIcon 
 } from './PaymentMethodIcons';
+import AlgorandTransactionInfo from './AlgorandTransactionInfo';
 
 interface PaymentMethodFormProps {
   onSuccess: () => void;
@@ -24,6 +25,8 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({ onSuccess, onCanc
   const [cardError, setCardError] = useState<string | null>(null);
   const [cardholderName, setCardholderName] = useState('');
   const [saveCard, setSaveCard] = useState(true);
+  const [blockchainTxId, setBlockchainTxId] = useState<string | null>(null);
+  const [blockchainTimestamp, setBlockchainTimestamp] = useState<string>('');
   
   const stripe = useStripe();
   const elements = useElements();
@@ -79,14 +82,22 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({ onSuccess, onCanc
 
         // Log to blockchain if wallet is connected
         if (isWalletConnected) {
-          await logPaymentMethod(user.uid, 'card');
+          const txId = await logPaymentMethod(user.uid, 'card');
+          if (txId) {
+            setBlockchainTxId(txId);
+            setBlockchainTimestamp(new Date().toISOString());
+          }
         } else {
           // Prompt to connect wallet for blockchain logging
           const shouldConnect = window.confirm('Would you like to connect your Algorand wallet to securely log this payment method on the blockchain?');
           if (shouldConnect) {
             await connectWallet();
             if (isWalletConnected) {
-              await logPaymentMethod(user.uid, 'card');
+              const txId = await logPaymentMethod(user.uid, 'card');
+              if (txId) {
+                setBlockchainTxId(txId);
+                setBlockchainTimestamp(new Date().toISOString());
+              }
             }
           }
         }
@@ -116,7 +127,11 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({ onSuccess, onCanc
 
         // Log to blockchain
         if (isWalletConnected) {
-          await logPaymentMethod(user.uid, 'applepay');
+          const txId = await logPaymentMethod(user.uid, 'applepay');
+          if (txId) {
+            setBlockchainTxId(txId);
+            setBlockchainTimestamp(new Date().toISOString());
+          }
         }
       } else {
         // For Venmo and Cash App payment methods
@@ -135,7 +150,11 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({ onSuccess, onCanc
 
         // Log to blockchain
         if (isWalletConnected) {
-          await logPaymentMethod(user.uid, type);
+          const txId = await logPaymentMethod(user.uid, type);
+          if (txId) {
+            setBlockchainTxId(txId);
+            setBlockchainTimestamp(new Date().toISOString());
+          }
         }
       }
       
@@ -314,6 +333,15 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({ onSuccess, onCanc
               </div>
             </div>
           </div>
+        )}
+
+        {/* Blockchain transaction info */}
+        {blockchainTxId && (
+          <AlgorandTransactionInfo 
+            txId={blockchainTxId}
+            paymentType={type}
+            timestamp={blockchainTimestamp}
+          />
         )}
 
         <div className="flex space-x-2 pt-2">

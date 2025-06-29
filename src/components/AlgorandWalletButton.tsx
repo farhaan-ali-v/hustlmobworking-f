@@ -11,8 +11,8 @@ const AlgorandWalletButton: React.FC<AlgorandWalletButtonProps> = ({ className =
   const { disconnect } = useWallet();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  const handleConnect = () => {
-    connectWallet();
+  const handleConnect = async () => {
+    await connectWallet();
   };
 
   const handleDisconnect = () => {
