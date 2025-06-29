@@ -49,16 +49,26 @@ Sentry.init({
   release: import.meta.env.VITE_APP_VERSION || "hustl@dev",
 });
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <Sentry.ErrorBoundary fallback={<p>An error has occurred. Our team has been notified.</p>}>
-      <LingoProviderWrapper loadDictionary={(locale) => loadDictionary(locale)}>
-        <TranslationProvider>
-          <StripeProvider>
-            <App />
-          </StripeProvider>
-        </TranslationProvider>
-      </LingoProviderWrapper>
-    </Sentry.ErrorBoundary>
-  </StrictMode>
-);
+// Make sure we have a root element to render to
+const rootElement = document.getElementById('root');
+
+if (!rootElement) {
+  console.error('Root element not found! Make sure there is a div with id="root" in index.html');
+  const errorDiv = document.createElement('div');
+  errorDiv.textContent = 'Error: Root element not found!';
+  document.body.appendChild(errorDiv);
+} else {
+  createRoot(rootElement).render(
+    <StrictMode>
+      <Sentry.ErrorBoundary fallback={<p>An error has occurred. Our team has been notified.</p>}>
+        <LingoProviderWrapper loadDictionary={(locale) => loadDictionary(locale)}>
+          <TranslationProvider>
+            <StripeProvider>
+              <App />
+            </StripeProvider>
+          </TranslationProvider>
+        </LingoProviderWrapper>
+      </Sentry.ErrorBoundary>
+    </StrictMode>
+  );
+}
