@@ -5,6 +5,7 @@ import StripeProvider from './components/StripeProvider';
 import { TranslationProvider } from './components/TranslationProvider';
 import { LingoProviderWrapper, loadDictionary } from 'lingo.dev/react/client';
 
+
 const pera = new PeraWalletConnect();
 
 export const Providers = ({ children }: { children: React.ReactNode }) => {
