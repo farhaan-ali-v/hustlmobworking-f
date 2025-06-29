@@ -1,5 +1,5 @@
 import algosdk from 'algosdk';
-import { AlgoAmount, getAlgorandClients } from '@algorandfoundation/algokit-utils';
+import * as algokit from '@algorandfoundation/algokit-utils';
 
 // Algorand TestNet configuration
 const ALGORAND_NETWORK = 'testnet';
@@ -16,7 +16,7 @@ const INDEXER_TOKEN = API_KEY;
  */
 export const initAlgorandClients = async () => {
   try {
-    const { algod, indexer } = getAlgorandClients({
+    const { algod, indexer } = algokit.getAlgorandClients({
       network: ALGORAND_NETWORK,
       algod: {
         server: NODE_SERVER,
