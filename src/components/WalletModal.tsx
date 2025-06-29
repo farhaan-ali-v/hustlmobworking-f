@@ -10,6 +10,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import { walletService } from '../lib/walletService';
 import { transactionService, paymentMethodService } from '../lib/database';
 import { auth } from '../lib/firebase';
+import AlgorandWalletButton from './AlgorandWalletButton';
 import { 
   CreditCardIcon, 
   VenmoIcon, 
@@ -164,9 +165,12 @@ const WalletModal: React.FC<WalletModalProps> = ({ onClose }) => {
             <WalletIcon className="w-6 h-6 mr-2" />
             Your Wallet
           </h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-            <X className="w-6 h-6" />
-          </button>
+          <div className="flex items-center space-x-2">
+            <AlgorandWalletButton />
+            <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+              <X className="w-6 h-6" />
+            </button>
+          </div>
         </div>
 
         <div className="p-6">

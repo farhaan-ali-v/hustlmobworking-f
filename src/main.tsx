@@ -6,6 +6,9 @@ import StripeProvider from './components/StripeProvider.tsx';
 import { TranslationProvider } from './components/TranslationProvider.tsx';
 import { LingoProviderWrapper, loadDictionary } from "lingo.dev/react/client";
 import * as Sentry from "@sentry/react";
+import { WalletConnectProvider } from './components/WalletConnectProvider.tsx';
+import { WalletProvider } from '@txnlab/use-wallet';
+import { PeraWalletConnect } from '@perawallet/connect';
 
 // Initialize Sentry
 Sentry.init({
@@ -49,6 +52,9 @@ Sentry.init({
   release: import.meta.env.VITE_APP_VERSION || "hustl@dev",
 });
 
+// Initialize wallet providers
+const pera = new PeraWalletConnect();
+
 // Make sure we have a root element to render to
 const rootElement = document.getElementById('root');
 
@@ -61,13 +67,25 @@ if (!rootElement) {
   createRoot(rootElement).render(
     <StrictMode>
       <Sentry.ErrorBoundary fallback={<p>An error has occurred. Our team has been notified.</p>}>
-        <LingoProviderWrapper loadDictionary={(locale) => loadDictionary(locale)}>
-          <TranslationProvider>
-            <StripeProvider>
-              <App />
-            </StripeProvider>
-          </TranslationProvider>
-        </LingoProviderWrapper>
+        <WalletProvider
+          providers={[pera]}
+          nodeConfig={{
+            network: 'testnet',
+            nodeServer: 'https://testnet-api.nodely.io',
+            nodeToken: 'BOLTqzcvtetizg512',
+            nodePort: '',
+          }}
+        >
+          <WalletConnectProvider>
+            <LingoProviderWrapper loadDictionary={(locale) => loadDictionary(locale)}>
+              <TranslationProvider>
+                <StripeProvider>
+                  <App />
+                </StripeProvider>
+              </TranslationProvider>
+            </LingoProviderWrapper>
+          </WalletConnectProvider>
+        </WalletProvider>
       </Sentry.ErrorBoundary>
     </StrictMode>
   );

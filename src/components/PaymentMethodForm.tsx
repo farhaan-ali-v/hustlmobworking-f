@@ -4,6 +4,7 @@ import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { paymentMethodService } from '../lib/database';
 import { auth } from '../lib/firebase';
 import toast from 'react-hot-toast';
+import { useBlockchainLogger } from './WalletConnectProvider';
 import { 
   CreditCardIcon, 
   VenmoIcon, 
@@ -26,6 +27,7 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({ onSuccess, onCanc
   
   const stripe = useStripe();
   const elements = useElements();
+  const { logPaymentMethod, isWalletConnected, connectWallet } = useBlockchainLogger();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,6 +76,20 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({ onSuccess, onCanc
             cardholder_name: cardholderName
           }
         });
+
+        // Log to blockchain if wallet is connected
+        if (isWalletConnected) {
+          await logPaymentMethod(user.uid, 'card');
+        } else {
+          // Prompt to connect wallet for blockchain logging
+          const shouldConnect = window.confirm('Would you like to connect your Algorand wallet to securely log this payment method on the blockchain?');
+          if (shouldConnect) {
+            await connectWallet();
+            if (isWalletConnected) {
+              await logPaymentMethod(user.uid, 'card');
+            }
+          }
+        }
       } else if (type === 'applepay') {
         if (!stripe) {
           throw new Error('Stripe has not been properly initialized');
@@ -97,6 +113,11 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({ onSuccess, onCanc
             is_apple_pay_capable: true
           }
         });
+
+        // Log to blockchain
+        if (isWalletConnected) {
+          await logPaymentMethod(user.uid, 'applepay');
+        }
       } else {
         // For Venmo and Cash App payment methods
         if (!username.trim()) {
@@ -111,6 +132,11 @@ const PaymentMethodForm: React.FC<PaymentMethodFormProps> = ({ onSuccess, onCanc
             verified: false
           }
         });
+
+        // Log to blockchain
+        if (isWalletConnected) {
+          await logPaymentMethod(user.uid, type);
+        }
       }
       
       toast.success('Payment method added successfully');
