@@ -4,7 +4,7 @@ import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { paymentMethodService } from '../lib/database';
 import { auth } from '../lib/firebase';
 import toast from 'react-hot-toast';
-import { useBlockchainLogger } from './WalletConnectProvider';
+import { useBlockchainLogger } from './BlockchainLoggerProvider';
 import { 
   CreditCardIcon, 
   VenmoIcon, 
