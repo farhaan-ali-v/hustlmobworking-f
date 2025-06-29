@@ -8,7 +8,10 @@ import { LingoProviderWrapper, loadDictionary } from 'lingo.dev/react/client';
 import * as Sentry from '@sentry/react';
 import { WalletProvider } from '@txnlab/use-wallet';
 import { PeraWalletConnect } from '@perawallet/connect';
-import { BlockchainLoggerProvider } from './components/BlockchainLoggerProvider.tsx'; // ✅ Correct import
+import { lazy, Suspense } from 'react';
+const BlockchainLoggerProvider = lazy(() => import('./components/BlockchainLoggerProvider.tsx'));
+
+// import { BlockchainLoggerProvider } from './components/BlockchainLoggerProvider.tsx'; // ✅ Correct import
 
 // Initialize Sentry
 Sentry.init({
@@ -40,16 +43,17 @@ if (!rootElement) {
   document.body.appendChild(errorDiv);
 } else {
   createRoot(rootElement).render(
-    <StrictMode>
-      <Sentry.ErrorBoundary fallback={<p>An error has occurred. Our team has been notified.</p>}>
-        <WalletProvider
-          providers={[pera]}
-          nodeConfig={{
-            network: 'testnet',
-            nodeServer: 'https://testnet-api.nodely.io',
-            nodeToken: 'BOLTqzcvtetizg512',
-          }}
-        >
+  <StrictMode>
+    <Sentry.ErrorBoundary fallback={<p>An error has occurred. Our team has been notified.</p>}>
+      <WalletProvider
+        providers={[pera]}
+        nodeConfig={{
+          network: 'testnet',
+          nodeServer: 'https://testnet-api.nodely.io',
+          nodeToken: 'BOLTqzcvtetizg512',
+        }}
+      >
+        <Suspense fallback={<p>Loading...</p>}>
           <BlockchainLoggerProvider>
             <LingoProviderWrapper loadDictionary={(locale) => loadDictionary(locale)}>
               <TranslationProvider>
@@ -59,8 +63,8 @@ if (!rootElement) {
               </TranslationProvider>
             </LingoProviderWrapper>
           </BlockchainLoggerProvider>
-        </WalletProvider>
-      </Sentry.ErrorBoundary>
-    </StrictMode>
-  );
-}
+        </Suspense>
+      </WalletProvider>
+    </Sentry.ErrorBoundary>
+  </StrictMode>
+);
