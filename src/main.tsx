@@ -83,7 +83,7 @@ if (!rootElement) {
                 </StripeProvider>
               </TranslationProvider>
             </LingoProviderWrapper>
-          </WalletConnectProvider>
+          </BlockchainLoggerProvider>
         </WalletProvider>
       </Sentry.ErrorBoundary>
     </StrictMode>
