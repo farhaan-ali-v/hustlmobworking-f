@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useBlockchainLogger } from './WalletConnectProvider';
+import { useBlockchainLogger } from './BlockchainLoggerProvider';
 import { useWallet } from '@txnlab/use-wallet';
 
 interface AlgorandWalletButtonProps {
