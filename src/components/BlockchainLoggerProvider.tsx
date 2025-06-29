@@ -84,4 +84,3 @@ export const BlockchainLoggerProvider: React.FC<Props> = ({ children }) => {
     </BlockchainLoggerContext.Provider>
   );
 };
-export { useBlockchainLogger };
