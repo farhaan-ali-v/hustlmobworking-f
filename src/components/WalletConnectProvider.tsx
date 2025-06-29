@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useWallet } from '@txnlab/use-wallet';
+import { useWallet, WalletClientProvider } from '@txnlab/use-wallet';
 import { logPaymentMethodToBlockchain } from '../lib/algorand';
 import toast from 'react-hot-toast';
 
@@ -14,7 +14,7 @@ const BlockchainLoggerContext = createContext<BlockchainLoggerContextType>({
   logPaymentMethod: async () => null,
   isWalletConnected: false,
   connectWallet: async () => {},
-  activeAddress: null
+  activeAddress: null,
 });
 
 export const useBlockchainLogger = () => useContext(BlockchainLoggerContext);
@@ -24,17 +24,22 @@ interface WalletConnectProviderProps {
 }
 
 export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({ children }) => {
-  const { activeAddress, signer, providers, connect } = useWallet();
+  const walletContext = useWallet();
+
+  // Protect against uninitialized WalletProvider
+  if (!walletContext) {
+    console.warn("WalletProvider not initialized. Skipping Algorand wallet setup.");
+    return <>{children}</>;
+  }
+
+  const { activeAddress, signer, providers, connect } = walletContext;
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    // Initialize wallet connection silently
     const initWallet = async () => {
       try {
-        // Try to reconnect to previously connected wallet
         if (providers && providers.length > 0 && !activeAddress) {
-          // Find Pera wallet provider
-          const peraProvider = providers.find(p => p.id === 'pera-wallet');
+          const peraProvider = providers.find((p) => p.id === 'pera-wallet');
           if (peraProvider) {
             await connect(peraProvider.id);
           }
@@ -52,18 +57,15 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({ ch
   const connectWallet = async () => {
     try {
       if (providers && providers.length > 0) {
-        // Find Pera wallet provider
-        const peraProvider = providers.find(p => p.id === 'pera-wallet');
+        const peraProvider = providers.find((p) => p.id === 'pera-wallet');
         if (peraProvider) {
           await connect(peraProvider.id);
           toast.success('Wallet connected successfully');
           return;
-        } else {
-          // Use the first available provider if Pera is not available
-          await connect(providers[0].id);
-          toast.success('Wallet connected successfully');
-          return;
         }
+        await connect(providers[0].id);
+        toast.success('Wallet connected successfully');
+        return;
       }
       toast.error('No wallet providers available');
     } catch (error) {
@@ -85,7 +87,7 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({ ch
         activeAddress,
         signer
       );
-      
+
       if (txId) {
         console.log(`Payment method logged to blockchain with txID: ${txId}`);
         toast.success('Payment method logged to blockchain');
@@ -100,12 +102,12 @@ export const WalletConnectProvider: React.FC<WalletConnectProviderProps> = ({ ch
   };
 
   return (
-    <BlockchainLoggerContext.Provider 
-      value={{ 
+    <BlockchainLoggerContext.Provider
+      value={{
         logPaymentMethod,
         isWalletConnected: !!activeAddress,
         connectWallet,
-        activeAddress
+        activeAddress,
       }}
     >
       {children}
