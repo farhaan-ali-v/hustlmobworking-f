@@ -16,6 +16,9 @@ const viteConfig = {
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
+  define: {
+    global: 'globalThis',
+  },
 };
 
 export default defineConfig(viteConfig);
