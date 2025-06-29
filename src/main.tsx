@@ -73,7 +73,6 @@ if (!rootElement) {
             network: 'testnet',
             nodeServer: 'https://testnet-api.nodely.io',
             nodeToken: 'BOLTqzcvtetizg512',
-            nodePort: '',
           }}
         >
           <WalletConnectProvider>
