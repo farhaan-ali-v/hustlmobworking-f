@@ -75,7 +75,7 @@ if (!rootElement) {
             nodeToken: 'BOLTqzcvtetizg512',
           }}
         >
-          <WalletConnectProvider>
+          <BlockchainLoggerProvider>
             <LingoProviderWrapper loadDictionary={(locale) => loadDictionary(locale)}>
               <TranslationProvider>
                 <StripeProvider>
